@@ -1,0 +1,42 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: api-gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: users-service
+          uri: lb://users-service
+          predicates:
+            - Path=/api/v1/users/**
+        - id: hotels-service
+          uri: lb://hotels-service
+          predicates:
+            - Path=/api/v1/hotels/**
+        - id: ratings-service
+          uri: lb://ratings-service
+          predicates:
+            - Path=/api/v1/ratings/**
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+okta:
+  oauth2:
+    issuer: https://dev-46049467.okta.com/oauth2/default
+    audience: api://default
+    client-id: 0oa8lznqu1W3FpZtC5d7
+    client-secret: 9-cnSZoZMlQ0Q9EilXAmfAGazO2r7Jsh0Ry82xyJ
+    scopes:
+      - openid
+      - profile
+      - email
+      - offline_access

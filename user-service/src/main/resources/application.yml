@@ -1,0 +1,93 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservices
+    username: mysql
+    password: mysql
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+  application:
+    name: users-service
+  config:
+    import: optional:configserver:http://localhost:8085
+#  profiles:
+#    active:
+#      - default
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-46049467.okta.com/oauth2/default
+      client:
+        registration:
+          my-internal-client:
+            provider: okta
+            authorizationGrantType: client_credentials
+            scope:
+              - internal
+            clientId: 0oa8lznqu1W3FpZtC5d7
+            clientSecret: 9-cnSZoZMlQ0Q9EilXAmfAGazO2r7Jsh0Ry82xyJ
+        provider:
+          okta:
+            issuerUri: https://dev-46049467.okta.com/oauth2/default
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingHotelBreaker:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 6s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+  retry:
+    instances:
+      ratingHotelRetry:
+        maxAttempts: 3
+        waitDuration: 5s
+
+  ratelimiter:
+    instances:
+      userRateLimiter:
+        limitRefreshPeriod: 8s
+        limitForPeriod: 2
+        timeoutDuration: 2s
+
+okta:
+  oauth2:
+    issuer: https://dev-46049467.okta.com/oauth2/default
+    audience: api://default
+
+#    optional:config:
+#      server:http://localhost:8085:
+
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#  client:
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      defaultZone: http://localhost:8761/eureka
+
